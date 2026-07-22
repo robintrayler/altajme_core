@@ -39,42 +39,64 @@ old_predict <- agePredict(model = old_model, newPositions = isotopes$depth_m)
 isotopes$old_age <- old_predict$HDI$`0.5`
 isotopes$new_age <- c(top_predict$HDI$`0.5`, bottom_predict$HDI$`0.5`)
 
-isotopes <- isotopes |> 
-  select(d13Ccarb, 
-         new_age,
-         old_age,
-         GTS_age) |> 
-  pivot_longer(cols = c(old_age, new_age, GTS_age),
-               names_to = 'model',
-               values_to = 'age') |> 
-  mutate(model = factor(model, levels = c('old_age', 'GTS_age', 'new_age')))
+
+top_CI <- top_predict$raw |> t() |> 
+  apply(MARGIN = 1, 
+        FUN = quantile, probs = c(0.5, 0.025, 0.975), , na.rm = TRUE) |> 
+  t() |> 
+  as.data.frame() |> 
+  add_column(d13C = top_isotopes$d13Ccarb)
+
+bottom_CI <- bottom_predict$raw |> t() |> 
+  apply(MARGIN = 1, 
+        FUN = quantile, probs = c(0.5, 0.025, 0.975), na.rm = TRUE) |> 
+  t() |> 
+  as.data.frame() |> 
+  add_column(d13C = bottom_isotopes$d13Ccarb)
 
 
-labels <- c(
-  old_age = "Cramer et al. (2012)",
-  new_age = "This Study",
-  GTS_age = "GTS 2020"
-)
+old_CI <- old_predict$raw |> t() |> 
+  apply(MARGIN = 1, 
+        FUN = quantile, probs = c(0.5, 0.025, 0.975), na.rm = TRUE) |> 
+  t() |> 
+  as.data.frame() |> 
+  add_column(d13C = isotopes$d13Ccarb) |> 
+  add_column(model = 'Cramer et al. (2012)')
+
+
+new_CI <- rbind(top_CI, bottom_CI) |> 
+  add_column(model = 'This Study')
+
+
+GTS_CI <- isotopes |> 
+  select(d13C = d13Ccarb,
+         `50%` = GTS_age) |>
+  mutate(`2.5%` = NA,
+         `97.5%` = NA) |> 
+  add_column(model = 'GTS 2020') 
+
+CI <- rbind(old_CI, new_CI, GTS_CI) |> 
+  mutate(model = factor(model, levels = c('Cramer et al. (2012)', 'GTS 2020', 'This Study')))
+
+  
 
 
 pdf(file = './figures/isotopes.pdf', 
     width = 7.5,
     height = 7.5)
-isotopes |> 
-  ggplot(mapping = aes(x = d13Ccarb,
-                       y = age)) + 
-  # geom_path(show.legend = FALSE) +
-  geom_point(
-    alpha = 1,
-             show.legend = FALSE,
-             shape = 16,
-    size = 1,
-    color = 'grey10') +
 
-  scale_y_reverse() + 
-  facet_wrap(~model, labeller = as_labeller(labels)) + 
+CI |> 
+  ggplot(mapping = aes(y = `50%`, 
+                       x = d13C)) + 
+  geom_point(size = 0.5) + 
+  geom_errorbar(mapping = aes(ymin = `2.5%`, 
+                              ymax = `97.5%`),
+                alpha = 0.1) + 
+  facet_wrap(.~model) + 
   xlab(expression(delta^13*C[carbonate])) + 
   ylab('Age (Ma)') + 
+  scale_y_reverse() + 
+  theme(panel.grid = element_blank()) + 
   theme(strip.background = element_rect(fill = 'white'),
         panel.grid.minor = element_blank(),
         axis.text = element_text(size = 12, color = 'black'),

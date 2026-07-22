@@ -36,11 +36,11 @@ top_model <- ageModel(ages = geochron_top$age_new,
                       burn = 1000,
                       truncateDown = 431.44)
 
-bottom_model <- ageModel(ages = geochron_bottom$age_new,
-                      ageSds = geochron_bottom$age_sd_new,
-                      positions = -geochron_bottom$position_m,
-                      positionThicknesses = geochron_bottom$thickness_m,
-                      ids = geochron_bottom$sample,
+bottom_model <- ageModel(ages = geochron_all$age_new,
+                      ageSds = geochron_all$age_sd_new,
+                      positions = -geochron_all$position_m,
+                      positionThicknesses = geochron_all$thickness_m,
+                      ids = geochron_all$sample,
                       predictPositions = seq(-272.66, -330, by = -0.01),
                       MC = 10000, 
                       burn = 1000,
@@ -58,11 +58,24 @@ old_model <- ageModel(ages = geochron_old$age_old,
                       burn = 1000,
                       truncateDown = 437.7)
 
+all_model <- ageModel(ages = geochron_all$age_new,
+                      ageSds = geochron_all$age_sd_new,
+                      positions = -geochron_all$position_m,
+                      positionThicknesses = geochron_all$thickness_m,
+                      ids = geochron_all$sample,
+                      predictPositions = seq(0, -330, by = -0.01),
+                      MC = 10000, 
+                      burn = 1000,
+                      truncateDown = 437.7) # Cramer et al., 2012
+
 # format the models and save the results 
 top_model <- format_model(top_model)
 bottom_model <- format_model(bottom_model)
 old_model <- format_model(old_model)
+all_model <- format_model(all_model)
 
 old_model |> write_rds(file = './results/old_model.rds')
 top_model |> write_rds(file = './results/top_model.rds')
 bottom_model |> write_rds(file = './results/bottom_model.rds')
+all_model |> write_rds(file = './results/all_model.rds')
+

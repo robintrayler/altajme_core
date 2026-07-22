@@ -73,9 +73,26 @@ LW_boundary <- -c(280.63, 281.75)
 LW_boundary_age <- agePredict(model = bottom_model, newPositions = LW_boundary)
 LW_boundary_duration <- (LW_boundary_age$raw[, 2] - LW_boundary_age$raw[, 1]) |> calculate_duration()
 
-hist(LW_boundary_age$raw[, 2] - LW_boundary_age$raw[, 1])
+# Upper Visby
+Upper_Visby <- -c(272.75, 280.6)
+Upper_Visby_age <- agePredict(model = bottom_model, newPositions = Upper_Visby)
+Upper_Visby_duration <- (Upper_Visby_age$raw[, 2] - Upper_Visby_age$raw[, 1]) |> calculate_duration()
 
+# Hogklint
+Hogklint        <- -c(258.45, 272.75)
+Hogklint_top    <- agePredict(model = top_model, newPositions = -258.45)
+Hogklint_bottom <-  agePredict(model = bottom_model, newPositions = -272.75)
+Hogklint_duration <- (Hogklint_bottom$raw[, 1] - Hogklint_top$raw[, 1]) |> calculate_duration()
 
+# Tofta
+Tofta <- -c(243.00, 258.45)
+Tofta_age <- agePredict(model = top_model, newPositions = Tofta)
+Tofta_duration <- (Tofta_age$raw[, 2] - Tofta_age$raw[, 1]) |> calculate_duration()
+
+# Hangvar
+Hangvar <- -c(234.00, 243.00)
+Hangvar_age <- agePredict(model = top_model, newPositions = Hangvar)
+Hangvar_duration <- (Hangvar_age$raw[, 2] - Hangvar_age$raw[, 1]) |> calculate_duration()
 
 
 
@@ -90,7 +107,11 @@ rbind(early_blip_duration,
       mulde_plus_duration,
       mulde_drop_duration,
       mulde_middle_duration,
-      LW_boundary_duration) |> 
+      LW_boundary_duration,
+      Upper_Visby_duration,
+      Hogklint_duration,
+      Tofta_duration,
+      Hangvar_duration) |> 
   as.data.frame() |> 
   add_column(name = c('early blip',
                  'early rise', 
@@ -102,5 +123,9 @@ rbind(early_blip_duration,
                  'mulde_plus',
                  'mulde_drop',
                  'mulde_middle',
-                 'LW_boundary_duration')) |> 
+                 'LW_boundary_duration',
+                 'upper_visby_duration',
+                 'hogklint_duration',
+                 'tofta_duration',
+                 'hangvar_duration')) |> 
   write_csv('./results/durations.csv')

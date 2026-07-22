@@ -24,6 +24,7 @@ gts <- read.csv(file = './data/isotopes.csv') |>
 top_model <- read_rds(file = './results/top_model.rds')
 bottom_model <- read_rds(file = './results/bottom_model.rds')
 old_model <- read_rds(file = './results/old_model.rds')
+all_model <- read_rds(file = './results/all_model.rds')
 
 # plot the old dates model
 old_admp <- old_model$HDI |>
@@ -58,7 +59,8 @@ old_admp <- old_model$HDI |>
     
 
 # plot the new dates model
-new_admp <- top_model$HDI |>
+# new_admp <- 
+  top_model$HDI |>
   ggplot(mapping = aes(y = position)) +
   geom_ribbon(mapping = aes(xmin = `2.5%`,
                             xmax = `97.5%`),
@@ -101,7 +103,21 @@ new_admp <- top_model$HDI |>
             inherit.aes = FALSE,
             color = 'red',
             lineend = 'round',
-            linetype = 'dashed')
+            linetype = 'dashed') + 
+  geom_line(data = all_model$HDI,
+            mapping = aes(x = `50%`),
+            linetype = 'dotted',
+            color = 'blue') + 
+  geom_line(data = all_model$HDI,
+            mapping = aes(x = `2.5%`),
+            linetype = 'dotted',
+            color = 'blue') + 
+    geom_line(data = all_model$HDI,
+              mapping = aes(x = `97.5%`),
+              linetype = 'dotted',
+              color = 'blue')
+  
+  
 
 
 legend = get_plot_component(new_admp, 'guide-box')
@@ -135,3 +151,4 @@ ggplot() +
   geom_vline(mapping = aes(xintercept = duration_CI),
              linetype = 'dashed')
 dev.off()
+
